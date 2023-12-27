@@ -18,7 +18,6 @@ app.use((req, res) => {
   res.status(404).json({ message: "Not found" });
 });
 
-// Middleware para manejar errores
 app.use((err, req, res, next) => {
   res.status(500).json({ message: err.message });
 });
