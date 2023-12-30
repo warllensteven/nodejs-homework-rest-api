@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const authenticateUser = require("../middleware/authenticateUser");
 const {
   listContacts,
   getContactById,
@@ -8,9 +9,11 @@ const {
   updateContact,
 } = require("../models/contacts");
 
+router.use(authenticateUser);
+
 router.get("/", async (req, res, next) => {
   try {
-    const contacts = await listContacts();
+    const contacts = await listContacts(req.user._id);
     res.status(200).json(contacts);
   } catch (error) {
     next(error);
@@ -32,7 +35,7 @@ router.get("/:contactId", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const newContact = await addContact(req.body);
+    const newContact = await addContact({ ...req.body, owner: req.user._id });
     res.status(201).json(newContact);
   } catch (error) {
     next(error);
