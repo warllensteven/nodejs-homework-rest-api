@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const authenticateUser = require("../middleware/authenticateUser");
 
 const generateJWT = (userId) => {
   const secretKey = process.env.JWT_SECRET_KEY || "your_secret_key_here";
@@ -60,6 +61,31 @@ router.post("/login", async (req, res, next) => {
     const token = generateJWT(user._id);
 
     res.status(200).json({ token, user: { email: user.email } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/logout", authenticateUser, async (req, res, next) => {
+  try {
+    const user = req.user;
+
+    user.token = null;
+    await user.save();
+
+    res.status(204).end();
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/current", authenticateUser, async (req, res, next) => {
+  try {
+    const user = req.user;
+
+    res
+      .status(200)
+      .json({ email: user.email, subscription: user.subscription });
   } catch (error) {
     next(error);
   }
